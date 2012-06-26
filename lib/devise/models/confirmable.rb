@@ -33,15 +33,12 @@ module Devise
         before_create :generate_confirmation_token, :if => :confirmation_required?
         after_create  :send_on_create_confirmation_instructions, :if => :confirmation_required?
         before_update :postpone_email_change_until_confirmation, :if => :postpone_email_change?
-        after_update :send_confirmation_instructions, :if => :reconfirmation_required?
+        after_update  :send_confirmation_instructions, :if => :reconfirmation_required?
       end
 
       def self.required_fields(klass)
         required_methods = [:confirmation_token, :confirmed_at, :confirmation_sent_at]
-        if klass.reconfirmable
-          required_methods << :unconfirmed_email
-        end
-
+        required_methods << :unconfirmed_email if klass.reconfirmable
         required_methods
       end
 
@@ -81,7 +78,7 @@ module Devise
         @reconfirmation_required = false
 
         generate_confirmation_token! if self.confirmation_token.blank?
-        self.devise_mailer.confirmation_instructions(self).deliver
+        send_devise_notification(:confirmation_instructions)
       end
 
       # Resend confirmation token. This method does not need to generate a new token.
@@ -128,7 +125,7 @@ module Devise
         # instructions on creation. This can be overriden
         # in models to map to a nice sign up e-mail.
         def send_on_create_confirmation_instructions
-          self.devise_mailer.confirmation_instructions(self).deliver
+          send_devise_notification(:confirmation_instructions)
         end
 
         # Callback to overwrite if confirmation is required or not.

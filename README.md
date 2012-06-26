@@ -1,10 +1,10 @@
-*IMPORTANT:* Devise 2.0 is out. If you are upgrading, please read: https://github.com/plataformatec/devise/wiki/How-To:-Upgrade-to-Devise-2.0
+*IMPORTANT:* Devise 2.1 is out. If you are upgrading, please read: https://github.com/plataformatec/devise/wiki/How-To:-Upgrade-to-Devise-2.1
 
 ## Devise
 
 INFO: This README is [also available in a friendly navigable format](http://devise.plataformatec.com.br/).
 
-[![Build Status](https://secure.travis-ci.org/plataformatec/devise.png)](http://travis-ci.org/plataformatec/devise)
+[![Build Status](https://secure.travis-ci.org/plataformatec/devise.png)](http://travis-ci.org/plataformatec/devise) [![Code Climate](https://codeclimate.com/badge.png)](https://codeclimate.com/github/plataformatec/devise)
 
 Devise is a flexible authentication solution for Rails based on Warden. It:
 
@@ -13,20 +13,19 @@ Devise is a flexible authentication solution for Rails based on Warden. It:
 * Allows you to have multiple roles (or models/scopes) signed in at the same time;
 * Is based on a modularity concept: use just what you really need.
 
-It's comprised of 12 modules:
+It's composed of 12 modules:
 
-* Database Authenticatable: encrypts and stores a password in the database to validate the authenticity of a user while signing in. The authentication can be done both through POST requests or HTTP Basic Authentication.
-* Token Authenticatable: signs in a user based on an authentication token (also known as "single access token"). The token can be given both through query string or HTTP Basic Authentication.
-* Omniauthable: adds Omniauth (github.com/intridea/omniauth) support;
-* Confirmable: sends emails with confirmation instructions and verifies whether an account is already confirmed during sign in.
-* Recoverable: resets the user password and sends reset instructions.
-* Registerable: handles signing up users through a registration process, also allowing them to edit and destroy their account.
-* Rememberable: manages generating and clearing a token for remembering the user from a saved cookie.
-* Trackable: tracks sign in count, timestamps and IP address.
-* Timeoutable: expires sessions that have no activity in a specified period of time.
-* Validatable: provides validations of email and password. It's optional and can be customized, so you're able to define your own validations.
-* Lockable: locks an account after a specified number of failed sign-in attempts. Can unlock via email or after a specified time period.
-* Encryptable: adds support of other authentication mechanisms besides the built-in Bcrypt (the default).
+* [Database Authenticatable](http://rubydoc.info/github/plataformatec/devise/master/Devise/Models/DatabaseAuthenticatable): encrypts and stores a password in the database to validate the authenticity of a user while signing in. The authentication can be done both through POST requests or HTTP Basic Authentication.
+* [Token Authenticatable](http://rubydoc.info/github/plataformatec/devise/master/Devise/Models/TokenAuthenticatable): signs in a user based on an authentication token (also known as "single access token"). The token can be given both through query string or HTTP Basic Authentication.
+* [Omniauthable](http://rubydoc.info/github/plataformatec/devise/master/Devise/Models/Omniauthable): adds Omniauth (https://github.com/intridea/omniauth) support;
+* [Confirmable](http://rubydoc.info/github/plataformatec/devise/master/Devise/Models/Confirmable): sends emails with confirmation instructions and verifies whether an account is already confirmed during sign in.
+* [Recoverable](http://rubydoc.info/github/plataformatec/devise/master/Devise/Models/Recoverable): resets the user password and sends reset instructions.
+* [Registerable](http://rubydoc.info/github/plataformatec/devise/master/Devise/Models/Registerable): handles signing up users through a registration process, also allowing them to edit and destroy their account.
+* [Rememberable](http://rubydoc.info/github/plataformatec/devise/master/Devise/Models/Rememberable): manages generating and clearing a token for remembering the user from a saved cookie.
+* [Trackable](http://rubydoc.info/github/plataformatec/devise/master/Devise/Models/Trackable): tracks sign in count, timestamps and IP address.
+* [Timeoutable](http://rubydoc.info/github/plataformatec/devise/master/Devise/Models/Timeoutable): expires sessions that have no activity in a specified period of time.
+* [Validatable](http://rubydoc.info/github/plataformatec/devise/master/Devise/Models/Validatable): provides validations of email and password. It's optional and can be customized, so you're able to define your own validations.
+* [Lockable](http://rubydoc.info/github/plataformatec/devise/master/Devise/Models/Lockable): locks an account after a specified number of failed sign-in attempts. Can unlock via email or after a specified time period.
 
 ## Information
 
@@ -42,7 +41,7 @@ If you discover a problem with Devise, we would like to know about it. However, 
 
 https://github.com/plataformatec/devise/wiki/Bug-reports
 
-If you found a security bug, do *NOT* use the GitHub issue tracker. Send email or a private GitHub message to the maintainers listed at the bottom of the README.
+If you found a security bug, do *NOT* use the GitHub issue tracker. Send an email to the maintainers listed at the bottom of the README.
 
 ### Mailing list
 
@@ -91,7 +90,9 @@ Once you have solidified your understanding of Rails and authentication mechanis
 
 Devise 2.0 works with Rails 3.1 onwards. You can add it to your Gemfile with:
 
-  gem 'devise'
+```ruby
+gem 'devise'
+```
 
 Run the bundle command to install it.
 
@@ -303,7 +304,23 @@ https://github.com/plataformatec/devise/wiki/I18n
 
 ### Test helpers
 
-Devise includes some tests helpers for functional specs. To use them, you just need to include Devise::TestHelpers in your test class and use the sign_in and sign_out method. Such methods have the same signature as in controllers:
+Devise includes some tests helpers for functional specs. In other to use them, you need to include Devise in your functional tests by adding the following to the bottom of your `test/test_helper.rb` file:
+
+```ruby
+class ActionController::TestCase
+  include Devise::TestHelpers
+end
+```
+
+If you're using RSpec, you can put the following inside a file named `spec/support/devise.rb`:
+
+```ruby
+RSpec.configure do |config|
+  config.include Devise::TestHelpers, :type => :controller
+end
+```
+
+Now you are ready to use the `sign_in` and `sign_out` methods. Such methods have the same signature as in controllers:
 
 ```ruby
 sign_in :user, @user   # sign_in(scope, resource)
@@ -313,23 +330,14 @@ sign_out :user         # sign_out(scope)
 sign_out @user         # sign_out(resource)
 ```
 
-You can include the Devise Test Helpers in all of your tests by adding the following to the bottom of your test/test_helper.rb file:
+There are two things that is important to keep in mind:
 
-```ruby
-class ActionController::TestCase
-  include Devise::TestHelpers
-end
-```
+1) These helpers are not going to work for integration tests driven by Capybara or Webrat. They are meant to be used with functional tests only. Instead, fill in the form or explicitly set the user in session;
 
-If you're using RSpec and want the helpers automatically included within all `describe` blocks, add a file called spec/support/devise.rb with the following contents:
+2) If you are testing Devise internal controllers or a controller that inherits from Devise's, you need to tell Devise which mapping should be used before a request. This is necessary because Devise gets this information from router, but since functional tests do not pass through the router, it needs to be told explicitly. For example, if you are testing the user scope, simply do:
 
-```ruby
-RSpec.configure do |config|
-  config.include Devise::TestHelpers, :type => :controller
-end
-```
-
-Do not use such helpers for integration tests such as Cucumber or Webrat. Instead, fill in the form or explicitly set the user in session. For more tips, check the wiki (https://wiki.github.com/plataformatec/devise).
+    @request.env["devise.mapping"] = Devise.mappings[:user]
+    get :new
 
 ### Omniauth
 
@@ -379,4 +387,4 @@ https://github.com/plataformatec/devise/contributors
 
 ## License
 
-MIT License. Copyright 2012 Plataforma Tecnologia. http://blog.plataformatec.com.br
+MIT License. Copyright 2012 Plataformatec. http://plataformatec.com.br

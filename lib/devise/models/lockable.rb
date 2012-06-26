@@ -27,7 +27,7 @@ module Devise
       def self.required_fields(klass)
         attributes = []
         attributes << :failed_attempts if klass.lock_strategy_enabled?(:failed_attempts)
-        attributes << :unlock_at if klass.unlock_strategy_enabled?(:time)
+        attributes << :locked_at if klass.unlock_strategy_enabled?(:time)
         attributes << :unlock_token if klass.unlock_strategy_enabled?(:email)
 
         attributes
@@ -38,11 +38,11 @@ module Devise
         self.locked_at = Time.now.utc
 
         if unlock_strategy_enabled?(:email)
-          generate_unlock_token
+          generate_unlock_token!
           send_unlock_instructions
+        else
+          save(:validate => false)
         end
-
-        save(:validate => false)
       end
 
       # Unlock a user by cleaning locked_at and failed_attempts.
@@ -60,7 +60,7 @@ module Devise
 
       # Send unlock instructions by email
       def send_unlock_instructions
-        self.devise_mailer.unlock_instructions(self).deliver
+        send_devise_notification(:unlock_instructions)
       end
 
       # Resend the unlock instructions if the user is locked.
@@ -121,6 +121,10 @@ module Devise
         # Generates unlock token
         def generate_unlock_token
           self.unlock_token = self.class.unlock_token
+        end
+
+        def generate_unlock_token!
+          generate_unlock_token && save(:validate => false)
         end
 
         # Tells if the lock is expired if :time unlock strategy is active
